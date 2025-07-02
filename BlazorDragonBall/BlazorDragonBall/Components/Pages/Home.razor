@@ -1,0 +1,84 @@
+﻿@page "/"
+@using System.Net.Http
+@using System.Text.Json
+@inject HttpClient Http
+
+<h3>Informações do Personagem</h3>
+
+@if (character == null)
+{
+    <p>Carregando dados...</p>
+}
+else
+{
+    <p><strong>Nome:</strong> @character.Name</p>
+    <p><strong>Planeta de Origem:</strong> @character.OriginPlanet.Name</p>
+
+    <h4>Transformações:</h4>
+    <ul>
+        @foreach (var transformation in character.Transformations)
+        {
+            <li>@transformation.Name</li>
+        }
+    </ul>
+}
+
+@code {
+    public class Character
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Ki { get; set; }
+        public string MaxKi { get; set; }
+        public string Race { get; set; }
+        public string Gender { get; set; }
+        public string Description { get; set; }
+        public string Image { get; set; }
+        public string Affiliation { get; set; }
+        public OriginPlanet OriginPlanet { get; set; }
+        public List<Transformation> Transformations { get; set; }
+    }
+
+    public class OriginPlanet
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsDestroyed { get; set; }
+        public string Description { get; set; }
+        public string Image { get; set; }
+    }
+
+    public class Transformation
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Image { get; set; }
+        public string Ki { get; set; }
+    }
+
+    private Character character;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string url = "https://dragonball-api.com/api/characters/1";
+
+            var response = await Http.GetStringAsync(url);
+
+            character = JsonSerializer.Deserialize<Character>(response, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine("Erro ao acessar a API: " + e.Message);
+        }
+        catch (JsonException e)
+        {
+            Console.WriteLine("Erro ao deserializar o JSON: " + e.Message);
+        }
+    }
+}
+
